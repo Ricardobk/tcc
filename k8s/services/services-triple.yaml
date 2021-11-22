@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fdp-triple-service
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: triple-fair
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080

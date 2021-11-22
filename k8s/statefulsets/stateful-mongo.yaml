@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: mongo-fair
+  name: mongo-fair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongo-fair
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mongo-fair
+    spec:
+      containers:
+      - image: mongo:4.0.12
+        name: mongo
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-pv
+          mountPath: /data/db
+      nodeSelector:
+        cloud.google.com/gke-nodepool: crack-battery-327504-gke-data-pool
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-pv
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi

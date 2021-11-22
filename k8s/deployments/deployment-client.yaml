@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: fairdata-client
+    app.kubernetes.io/type: app
+  name: fairdata-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fairdata-client
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fairdata-client
+    spec:
+      containers:
+      - image: fairdata/fairdatapoint-client:1.10.0
+        name: fdp-client
+        ports:
+        - containerPort: 80
+        env:
+        - name: FDP_HOST
+          value: fdp-service
+      nodeSelector:
+        cloud.google.com/gke-nodepool: crack-battery-327504-gke-app-pool

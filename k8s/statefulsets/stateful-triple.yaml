@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: triple-fair
+  name: triple-fair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: triple-fair
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: triple-fair
+    spec:
+      containers:
+      - image: metaphacts/blazegraph-basic:2.2.0-20160908.003514-6
+        name: triple
+        ports:
+        - containerPort: 8080
+      nodeSelector:
+        cloud.google.com/gke-nodepool: crack-battery-327504-gke-data-pool

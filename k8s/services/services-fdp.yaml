@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fdp-service
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: fairdata-main
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
