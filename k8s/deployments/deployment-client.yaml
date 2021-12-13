@@ -23,5 +23,12 @@ spec:
         env:
         - name: FDP_HOST
           value: fdp-service
+        resources:
+          requests:
+            cpu: 0.1
+            memory: 250Mi
+          limits:
+            cpu: 0.5
+            memory: 500Mi
       nodeSelector:
         cloud.google.com/gke-nodepool: crack-battery-327504-gke-app-pool

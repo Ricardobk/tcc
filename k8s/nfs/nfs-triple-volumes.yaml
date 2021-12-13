@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-triple
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: nfs-triple-service.default.svc.cluster.local
+    path: "/"
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-triple
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi

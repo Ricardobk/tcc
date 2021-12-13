@@ -3,10 +3,11 @@ kind: Service
 metadata:
   name: fdp-mongo-service
 spec:
-  type: ClusterIP
   selector:
     app.kubernetes.io/name: mongo-fair
+  clusterIP: None
   ports:
   - protocol: TCP
     port: 27017
     targetPort: 27017
+  

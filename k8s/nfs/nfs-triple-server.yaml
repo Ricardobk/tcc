@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-triple-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: nfs-triple-server
+  template:
+    metadata:
+      labels:
+        role: nfs-triple-server
+    spec:
+      containers:
+      - name: nfs-triple-server
+        image: gcr.io/google_containers/volume-nfs:0.8
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports
+            name: mypvc
+      volumes:
+        - name: mypvc
+          gcePersistentDisk:
+            pdName: gce-nfs-disk-2
+            fsType: ext4
+      nodeSelector:
+        cloud.google.com/gke-nodepool: crack-battery-327504-gke-app-pool
