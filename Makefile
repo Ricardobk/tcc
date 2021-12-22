@@ -5,21 +5,17 @@ init:
 	gcloud auth application-default login && \
 	gcloud container clusters get-credentials `terraform -chdir=terraform output -raw kubernetes_cluster_name` --region `terraform -chdir=terraform output -raw zone`
 
-.PHONY: services
-services:
-	kubectl apply -f k8s/services
-
-.PHONY: deployments
-deployments:
-	kubectl apply -f k8s/deployments
-
-.PHONY: start
-start: services deployments
-
-.PHONY: apply
-apply:
+.PHONY: tf_apply
+tf_apply:
 	terraform -chdir=terraform apply -input=false
 
-.PHONY: plan
-plan:
+.PHONY: tf_plan
+tf_plan:
 	terraform -chdir=terraform plan -input=false
+
+.PHONY: helm_upgrade
+helm_upgrade:
+	kubectl delete statefulset --all # --cascade=false
+	helm upgrade --install fdp-gcp fdp-gcp/charts/fdp-gcp -f fdp-gcp/values.yaml
+
+

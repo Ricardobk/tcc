@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/name: mongo-fair
   name: mongo-fair
 spec:
-  replicas: 2
+  replicas: {{ .Values.statefulsets.mongo.replicas }}
   serviceName: fdp-mongo-service
   selector:
     matchLabels:
@@ -16,7 +16,7 @@ spec:
         app.kubernetes.io/name: mongo-fair
     spec:
       containers:
-      - image: mongo:4.0.12
+      - image: {{ .Values.statefulsets.mongo.image }}
         name: mongo
         command:
           - "mongod"
@@ -26,15 +26,15 @@ spec:
           - "MainRepSet"
         resources:
           requests:
-            cpu: 0.4
-            memory: 1000Mi
+            cpu: {{ .Values.statefulsets.mongo.cpu_requests }}
+            memory: {{ .Values.statefulsets.mongo.memory_requests }}
         ports:
         - containerPort: 27017
         volumeMounts:
         - name: mongo-pv
           mountPath: /data/db
       nodeSelector:
-        cloud.google.com/gke-nodepool: crack-battery-327504-gke-data-pool
+        cloud.google.com/gke-nodepool: data-pool
   volumeClaimTemplates:
   - metadata:
       name: mongo-pv
@@ -42,4 +42,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 5Gi
+          storage: {{ .Values.statefulsets.mongo.storage_size }}

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: fairdata-main
+    app.kubernetes.io/type: app
+  name: fairdata-main
+spec:
+  replicas: {{ .Values.deployments.main.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fairdata-main
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fairdata-main
+    spec:
+      containers:
+      - image: {{ .Values.deployments.main.image }}
+        name: fdp-main
+        command: ["/bin/sh", "-c"]  
+        resources:
+          requests:
+            cpu: {{ .Values.deployments.main.cpu_requests }}
+            memory: {{ .Values.deployments.main.memory_requests }}
+          limits:
+            cpu: {{ .Values.deployments.main.cpu_limits }}
+            memory: {{ .Values.deployments.main.memory_limits }}
+        args: 
+          - /bin/echo "instance:%  clientUrl! http://fdp-client-service%  persistentUrl! http://fdp-client-service%spring:%  data:%    mongodb:%      uri! mongodb://mongo-fair-0.fdp-mongo-service.default.svc.cluster.local:27017,mongo-fair-1.fdp-mongo-service.default.svc.cluster.local:27017/fdp?replicaSet=MainRepSet%repository:%    type! 5%    blazegraph:%        url! http://fdp-triple-service:8080/blazegraph" > ./tmp.yml && sed 's#%#\n#g' tmp.yml > tmp2.yml && sed 's#!#:#g' tmp2.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml
+        readinessProbe:
+          exec:
+            command:
+              - ls
+          initialDelaySeconds: 120
+      nodeSelector:
+        cloud.google.com/gke-nodepool: app-pool
+      

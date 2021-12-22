@@ -1,18 +1,3 @@
-variable "gke_username" {
-  default     = ""
-  description = "gke username"
-}
-
-variable "gke_password" {
-  default     = ""
-  description = "gke password"
-}
-
-variable "gke_num_nodes" {
-  default     = 1
-  description = "number of gke nodes"
-}
-
 # GKE cluster
 resource "google_container_cluster" "primary" {
   name     = "${var.project_id}-gke"
@@ -27,15 +12,31 @@ resource "google_container_cluster" "primary" {
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
 
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block  = ""
+    services_ipv4_cidr_block = ""
+  }
+
   vertical_pod_autoscaling { enabled = true } 
+  cluster_autoscaling { 
+        enabled = true 
+        resource_limits { 
+                resource_type = "cpu"
+                maximum = 10
+        }
+        resource_limits {
+                resource_type = "memory"
+                maximum = 50
+        }
+  }
 }
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "app-pool" {
-  name       = "${google_container_cluster.primary.name}-app-pool"
+  name       = "app-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = var.gke_num_nodes
+  node_count = var.app_pool_num_nodes
   autoscaling {
         min_node_count = 1
         max_node_count = 3
@@ -52,7 +53,7 @@ resource "google_container_node_pool" "app-pool" {
     }
 
     # preemptible  = true
-    machine_type = "n1-standard-1"
+    machine_type = var.data_pool_machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
@@ -62,10 +63,10 @@ resource "google_container_node_pool" "app-pool" {
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "data-pool" {
-  name       = "${google_container_cluster.primary.name}-data-pool"
+  name       = "data-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = var.gke_num_nodes
+  node_count = var.data_pool_num_nodes
 
   autoscaling {
     min_node_count = 2
@@ -83,7 +84,7 @@ resource "google_container_node_pool" "data-pool" {
     }
 
     # preemptible  = true
-    machine_type = "n1-standard-1"
+    machine_type = var.data_pool_machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"

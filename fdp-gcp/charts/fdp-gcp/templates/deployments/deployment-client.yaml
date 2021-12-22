@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/type: app
   name: fairdata-client
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployments.client.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: fairdata-client
@@ -16,7 +16,7 @@ spec:
         app.kubernetes.io/name: fairdata-client
     spec:
       containers:
-      - image: fairdata/fairdatapoint-client:1.10.0
+      - image: {{ .Values.deployments.client.image }} 
         name: fdp-client
         ports:
         - containerPort: 80
@@ -25,10 +25,10 @@ spec:
           value: fdp-service
         resources:
           requests:
-            cpu: 0.1
-            memory: 250Mi
+            cpu: {{ .Values.deployments.client.cpu_requests }}
+            memory: {{ .Values.deployments.client.memory_requests }}
           limits:
-            cpu: 0.5
-            memory: 500Mi
+            cpu: {{ .Values.deployments.client.cpu_limits }}
+            memory: {{ .Values.deployments.client.memory_limits }}
       nodeSelector:
-        cloud.google.com/gke-nodepool: crack-battery-327504-gke-app-pool
+        cloud.google.com/gke-nodepool: app-pool

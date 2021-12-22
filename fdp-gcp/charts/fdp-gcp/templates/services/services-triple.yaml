@@ -8,5 +8,5 @@ spec:
     app.kubernetes.io/name: triple-fair
   ports:
   - protocol: TCP
-    port: 7200
-    targetPort: 7200
+    port: 8080
+    targetPort: 8080

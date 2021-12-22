@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: triple-fair
+  name: triple-fair
+spec:
+  replicas: {{ .Values.statefulsets.triple.replicas }}
+  serviceName: fdp-triple-service
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: triple-fair
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: triple-fair
+    spec:
+      containers:
+      - image: {{ .Values.statefulsets.triple.image }}
+        name: triple
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          # name must match the volume name below
+          - name: triple-pv
+            mountPath: "/blazegraph-data"
+      volumes:
+      - name: triple-pv
+        persistentVolumeClaim:
+          claimName: triple-pv
+      nodeSelector:
+        cloud.google.com/gke-nodepool: data-pool
+#  volumeClaimTemplates:
+#  - metadata:
+#      name: triple-pv
+#    spec:
+#      accessModes: [ "ReadWriteOnce" ]
+#      resources:
+#        requests:
+#          storage: {{ .Values.statefulsets.triple.storage_size }}
