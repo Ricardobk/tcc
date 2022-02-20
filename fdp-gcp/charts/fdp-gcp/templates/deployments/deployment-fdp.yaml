@@ -15,10 +15,23 @@ spec:
       labels:
         app.kubernetes.io/name: fairdata-main
     spec:
+      initContainers:
+      - name: wait-for-dependencies
+        image: curlimages/curl:latest
+        args:
+          - /bin/sh
+          - -c
+          - while [[ $(curl -sw '%{http_code}' "http://fdp-mongo-service:27017" -o /dev/null) =~ [014-9][0-9][0-9] ]]; do
+              sleep 10;
+            done
+          - /bin/sh
+          - -c
+          -  while [[ $(curl -sw '%{http_code}' "http://fdp-triple-service:8080/blazegraph" -o /dev/null) =~ [014-9][0-9][0-9] ]]; do
+              sleep 10;
+            done
       containers:
       - image: {{ .Values.deployments.main.image }}
         name: fdp-main
-        command: ["/bin/sh", "-c"]  
         resources:
           requests:
             cpu: {{ .Values.deployments.main.cpu_requests }}
@@ -26,13 +39,38 @@ spec:
           limits:
             cpu: {{ .Values.deployments.main.cpu_limits }}
             memory: {{ .Values.deployments.main.memory_limits }}
+        command: ["/bin/sh", "-c"]  
         args: 
-          - /bin/echo "instance:%  clientUrl! http://fdp-client-service%  persistentUrl! http://fdp-client-service%spring:%  data:%    mongodb:%      uri! mongodb://mongo-fair-0.fdp-mongo-service.default.svc.cluster.local:27017,mongo-fair-1.fdp-mongo-service.default.svc.cluster.local:27017/fdp?replicaSet=MainRepSet%repository:%    type! 5%    blazegraph:%        url! http://fdp-triple-service:8080/blazegraph" > ./tmp.yml && sed 's#%#\n#g' tmp.yml > tmp2.yml && sed 's#!#:#g' tmp2.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml
+#          - /bin/echo "instance:%  clientUrl! http://fdp-client-service%  persistentUrl! http://fdp-client-service%spring:%  data:%    mongodb:%      uri! mongodb://fdp-mongo-service/fdp%repository:%    type! 5%    blazegraph:%        url! http://fdp-triple-service:8080/blazegraph" > ./tmp.yml && sed 's#%#\n#g' tmp.yml > tmp2.yml && sed 's#!#:#g' tmp2.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml
+
+          - '/bin/echo -e \
+"!instance:\n
+!  clientUrl: http://fdp-client-service\n
+!  persistentUrl: http://fdp-client-service\n
+!spring:\n
+!  data:\n
+!    mongodb:\n
+!      uri: mongodb://fdp-mongo-service/fdp\n
+!repository:\n
+!    type: 5\n
+!    blazegraph:\n
+!        url: http://fdp-triple-service:8080/blazegraph" > tmp.yml && sed ''s#!##g'' tmp.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml'
+
         readinessProbe:
-          exec:
-            command:
-              - ls
-          initialDelaySeconds: 120
-      nodeSelector:
-        cloud.google.com/gke-nodepool: app-pool
-      
+          httpGet:
+            path: /
+            port: 80
+          timeoutSeconds: 60
+          initialDelaySeconds: 80
+          periodSeconds: 15
+     # nodeSelector:
+     #   cloud.google.com/gke-nodepool: app-pool
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                   - "thumbspreview-dev-be-01.cmal08be-1146.cp.globoi.com" 
