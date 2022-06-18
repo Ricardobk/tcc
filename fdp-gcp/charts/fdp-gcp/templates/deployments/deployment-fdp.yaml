@@ -41,21 +41,7 @@ spec:
             memory: {{ .Values.deployments.main.memory_limits }}
         command: ["/bin/sh", "-c"]  
         args: 
-#          - /bin/echo "instance:%  clientUrl! http://fdp-client-service%  persistentUrl! http://fdp-client-service%spring:%  data:%    mongodb:%      uri! mongodb://fdp-mongo-service/fdp%repository:%    type! 5%    blazegraph:%        url! http://fdp-triple-service:8080/blazegraph" > ./tmp.yml && sed 's#%#\n#g' tmp.yml > tmp2.yml && sed 's#!#:#g' tmp2.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml
-
-          - '/bin/echo -e \
-"!instance:\n
-!  clientUrl: http://fdp-client-service\n
-!  persistentUrl: http://fdp-client-service\n
-!spring:\n
-!  data:\n
-!    mongodb:\n
-!      uri: mongodb://fdp-mongo-service/fdp\n
-!repository:\n
-!    type: 5\n
-!    blazegraph:\n
-!        url: http://fdp-triple-service:8080/blazegraph" > tmp.yml && sed ''s#!##g'' tmp.yml > ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml'
-
+          - cp /etc/config/application.yml ./application.yml && /usr/local/openjdk-16/bin/java -jar app.jar --spring.profiles.active=production --spring.config.location=classpath:/application.yml,classpath:/application.yml,file:/fdp/application.yml
         readinessProbe:
           httpGet:
             path: /
@@ -63,14 +49,12 @@ spec:
           timeoutSeconds: 60
           initialDelaySeconds: 80
           periodSeconds: 15
-     # nodeSelector:
-     #   cloud.google.com/gke-nodepool: app-pool
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: In
-                  values:
-                   - "thumbspreview-dev-be-01.cmal08be-1146.cp.globoi.com" 
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+      volumes:
+         - name: config-volume
+           configMap:
+             name: configfile
+      nodeSelector:
+        cloud.google.com/gke-nodepool: app-pool

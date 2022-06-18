@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configfile
+data:
+  application.yml: |
+   instance:
+     clientUrl: http://fdp-client-service
+     persistentUrl: http://fdp-client-service
+   spring:
+     data:
+       mongodb:
+          uri: mongodb://fdp-mongo-service/fdp
+   repository:
+      type: 5
+      blazegraph:
+          url: http://fdp-triple-service:8080/blazegraph
