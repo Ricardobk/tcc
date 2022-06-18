@@ -18,16 +18,19 @@ spec:
       containers:
       - image: {{ .Values.statefulsets.mongo.image }}
         name: mongo
-        command:
-          - "mongod"
-          - "--bind_ip"
-          - "0.0.0.0"
-          - "--replSet"
-          - "MainRepSet"
+#        command:
+#          - "mongod"
+#          - "--bind_ip"
+#          - "0.0.0.0"
+#          - "--replSet"
+#          - "MainRepSet"
         resources:
           requests:
             cpu: {{ .Values.statefulsets.mongo.cpu_requests }}
             memory: {{ .Values.statefulsets.mongo.memory_requests }}
+          limits:
+            cpu: {{ .Values.statefulsets.mongo.cpu_limits }}
+            memory: {{ .Values.statefulsets.mongo.memory_limits }}
         ports:
         - containerPort: 27017
         volumeMounts:
