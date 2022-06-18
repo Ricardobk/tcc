@@ -20,14 +20,19 @@ variable "gke_password" {
   description = "gke password"
 }
 
-variable "app_pool_num_nodes" {
+variable "app_pool_min_nodes" {
   default     = 1
-  description = "number of gke nodes on the app pool"
+  description = "minimum number of gke nodes on the app pool"
 }
 
-variable "data_pool_num_nodes" {
-  default     = 2
-  description = "number of gke nodes on the data pool"
+variable "app_pool_max_nodes" {
+  default     = 3
+  description = "maximum number of gke nodes on the app pool"
+}
+
+variable "data_pool_min_nodes" {
+  default     = 1
+  description = "minimum number of gke nodes on the data pool"
 }
 
 variable "app_pool_machine_type" {
