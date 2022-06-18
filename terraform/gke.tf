@@ -1,21 +1,19 @@
 # GKE cluster
 resource "google_container_cluster" "primary" {
+
   name     = "${var.project_id}-gke"
   location = var.zone
-  
-  # We can't create a cluster with no node pool defined, but we want to only use
-  # separately managed node pools. So we create the smallest possible default
-  # node pool and immediately delete it.
-  remove_default_node_pool = true
-  initial_node_count       = 1
-
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
-
   ip_allocation_policy {
     cluster_ipv4_cidr_block  = ""
     services_ipv4_cidr_block = ""
   }
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
+
 
   vertical_pod_autoscaling { enabled = true } 
   cluster_autoscaling { 
@@ -36,10 +34,10 @@ resource "google_container_node_pool" "app-pool" {
   name       = "app-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = var.app_pool_num_nodes
+  node_count = 1
   autoscaling {
-        min_node_count = 1
-        max_node_count = 3
+        min_node_count = var.app_pool_min_nodes
+        max_node_count = var.app_pool_max_nodes
   }
 
   node_config {
@@ -51,8 +49,8 @@ resource "google_container_node_pool" "app-pool" {
     labels = {
       env = var.project_id
     }
+    disk_size_gb = 10
 
-    # preemptible  = true
     machine_type = var.data_pool_machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
@@ -66,12 +64,7 @@ resource "google_container_node_pool" "data-pool" {
   name       = "data-pool"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
-  node_count = var.data_pool_num_nodes
-
-  autoscaling {
-    min_node_count = 2
-    max_node_count = 2
-  }
+  node_count = var.data_pool_min_nodes
 
   node_config {
     oauth_scopes = [
@@ -79,15 +72,21 @@ resource "google_container_node_pool" "data-pool" {
       "https://www.googleapis.com/auth/monitoring",
     ]
 
+    disk_size_gb = 10
+
     labels = {
       env = var.project_id
     }
 
     # preemptible  = true
     machine_type = var.data_pool_machine_type
-    tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
     }
+  }
+
+  autoscaling {
+    min_node_count = var.data_pool_min_nodes
+    max_node_count = 2
   }
 }
