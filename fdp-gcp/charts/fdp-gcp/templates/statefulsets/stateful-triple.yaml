@@ -20,8 +20,14 @@ spec:
         name: triple
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            cpu: {{ .Values.statefulsets.triple.cpu_requests }}
+            memory: {{ .Values.statefulsets.triple.memory_requests }}
+          limits:
+            cpu: {{ .Values.statefulsets.triple.cpu_limits }}
+            memory: {{ .Values.statefulsets.triple.memory_limits }}
         volumeMounts:
-          # name must match the volume name below
           - name: triple-pv
             mountPath: "/blazegraph-data"
       volumes:
@@ -30,11 +36,11 @@ spec:
           claimName: triple-pv
       nodeSelector:
         cloud.google.com/gke-nodepool: data-pool
-#  volumeClaimTemplates:
-#  - metadata:
-#      name: triple-pv
-#    spec:
-#      accessModes: [ "ReadWriteOnce" ]
-#      resources:
-#        requests:
-#          storage: {{ .Values.statefulsets.triple.storage_size }}
+  volumeClaimTemplates:
+  - metadata:
+      name: triple-pv
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.statefulsets.triple.storage_size }}
