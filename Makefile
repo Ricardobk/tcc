@@ -1,8 +1,10 @@
 .PHONY: init
 init:
-	terraform -chdir=terraform init && \
-	gcloud config set account ricardoknopman@gmail.com && \
 	gcloud auth application-default login && \
+	terraform -chdir=terraform init
+
+.PHONY: kube_init
+kube_init:
 	gcloud container clusters get-credentials `terraform -chdir=terraform output -raw kubernetes_cluster_name` --region `terraform -chdir=terraform output -raw zone`
 
 .PHONY: tf_apply
@@ -13,9 +15,15 @@ tf_apply:
 tf_plan:
 	terraform -chdir=terraform plan -input=false
 
-.PHONY: helm_upgrade
-helm_upgrade:
-	kubectl delete statefulset --all # --cascade=false
+
+.PHONY: helm_apply
+helm_apply:
 	helm upgrade --install fdp-gcp fdp-gcp/charts/fdp-gcp -f fdp-gcp/values.yaml
 
+.PHONY: helm_delete
+helm_delete:
+	helm uninstall fdp-gcp
 
+.PHONY: delete_cluster
+delete_cluster:
+	terraform -chdir=terraform destroy -input=false
