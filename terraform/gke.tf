@@ -51,7 +51,7 @@ resource "google_container_node_pool" "app-pool" {
     }
     disk_size_gb = 10
 
-    machine_type = var.data_pool_machine_type
+    machine_type = var.app_pool_machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
