@@ -46,9 +46,20 @@ spec:
           httpGet:
             path: /
             port: 80
-          timeoutSeconds: 60
+          timeoutSeconds: 5
           initialDelaySeconds: 80
           periodSeconds: 15
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+          terminationGracePeriodSeconds: 60
+
         volumeMounts:
         - name: config-volume
           mountPath: /etc/config
