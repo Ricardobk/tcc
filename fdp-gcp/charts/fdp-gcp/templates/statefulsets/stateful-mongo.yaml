@@ -43,6 +43,7 @@ spec:
       name: mongo-pv
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "retain-storageclass"
       resources:
         requests:
           storage: {{ .Values.statefulsets.mongo.storage_size }}

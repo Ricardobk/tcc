@@ -41,6 +41,7 @@ spec:
       name: triple-pv
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "retain-storageclass"
       resources:
         requests:
           storage: {{ .Values.statefulsets.triple.storage_size }}
